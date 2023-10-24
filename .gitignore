@@ -26,4 +26,4 @@ docs/site/
 # environment.
 Manifest.toml
 
-aux/
+aux/symbolic.max
