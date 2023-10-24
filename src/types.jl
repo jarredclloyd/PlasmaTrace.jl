@@ -1,32 +1,34 @@
 const sph = 3.6e6 # seconds per hour
-const window = Tuple{Int,Int}
-abstract type plasmaData end
+const window = Tuple{Integer,Integer} # why is this an integer rather than a Real? Is the a reason floats can't be used? And why is it a global constant?
+abstract type PlasmaData <: Any end
 
-mutable struct control
-    A::Union{Nothing,Vector{Float64}}
-    B::Union{Nothing,Vector{Float64}}
+mutable struct Control
+    A::Union{Nothing,Vector{AbstractFloat}} # what is A?
+    B::Union{Nothing,Vector{AbstractFloat}} # what is B?
     channels::Union{Nothing,Vector{String}}
 end
 
-mutable struct sample <: plasmaData
-    sname::String
+mutable struct Sample <: PlasmaData
+    samplename::String
     datetime::DateTime
     labels::Vector{String}
-    dat::Matrix
-    bwin::Union{Nothing,Vector{window}}
-    swin::Union{Nothing,Vector{window}}
-    standard::Int
+    data::Matrix{AbstractFloat}
+    blankwindow::Union{Nothing,Vector{window}}
+    samplewindow::Union{Nothing,Vector{window}}
+    standard::Integer
 end
 
-mutable struct run <: plasmaData
-    samples::Vector{sample}
-    control::Union{Nothing,control}
-    bpar::Union{Nothing,Vector}
-    spar::Union{Nothing,Vector}
-    bcov::Union{Nothing,Matrix}
-    scov::Union{Nothing,Matrix}
+mutable struct Run <: PlasmaData
+    samples::Vector{Sample}
+    control::Union{Nothing,Control}
+    bpar::Union{Nothing,Vector} # not sure what the abbreviation stands for (parameters?)
+    spar::Union{Nothing,Vector} # not sure what the abbreviation stands for (parameters?)
+    bcov::Union{Nothing,Matrix} # not sure what the abbreviation stands for (covariance?)
+    scov::Union{Nothing,Matrix} # not sure what the abbreviation stands for (covariance?)
 end
 
-sample(sname,datetime,labels,dat) = sample(sname,datetime,labels,dat,nothing,nothing,0)
+function sample(sname, datetime, labels, data)
+    return sample(sname, datetime, labels, data, nothing, nothing, 0)
+end
 
-run(samples) = run(samples,nothing,nothing,nothing,nothing,nothing)
+run(samples) = run(samples, nothing, nothing, nothing, nothing, nothing)
