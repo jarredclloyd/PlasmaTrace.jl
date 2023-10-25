@@ -1,9 +1,9 @@
-function markStandards!(pd; i = nothing, prefix = nothing, snames = nothing, standard = 0)
-    j = findSamples(pd; snames = snames, prefix = prefix, i = i)
+function markStandards!(pd; i = nothing, prefix = nothing, samplenames = nothing, standard = 0)
+    j = findSamples(pd; samplenames = samplenames, prefix = prefix, i = i)
     return setStandard!(pd; i = j, standard = standard)
 end
 
-function fitStandards!(pd::run; method::String, refmat::Union{String,Vector{String}}, n = 1)
+function fitStandards!(pd::Run; method::String, refmat::Union{String,Vector{String}}, n = 1)
     if isa(refmat, String)
         refmat = [refmat]
     end
@@ -32,7 +32,7 @@ function fitStandards!(pd::run; method::String, refmat::Union{String,Vector{Stri
     return setSPar!(pd; spar = sol)
 end
 
-function groupStandards!(pd::run)
+function groupStandards!(pd::Run)
     bpar = getBPar(pd)
     if isnothing(bpar)
         PTerror("missingBlank")
@@ -73,8 +73,8 @@ function groupStandards!(pd::run)
 end
 
 function predictStandard(
-    pd::run;
-    sname::Union{Nothing,String} = nothing,
+    pd::Run;
+    samplename::Union{Nothing,String} = nothing,
     prefix::Union{Nothing,String} = nothing,
     i::Union{Nothing,Integer} = nothing,
 )
@@ -86,7 +86,7 @@ function predictStandard(
     if isnothing(spar)
         PTerror("missingStandard")
     end
-    i = findSamples(pd; i = i, prefix = prefix, snames = sname)[1]
+    i = findSamples(pd; i = i, prefix = prefix, samplenames = samplename)[1]
     standard = getStandard(pd; i = i)
     if standard < 1
         return nothing
