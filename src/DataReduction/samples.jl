@@ -1,4 +1,4 @@
-function findSamples(pd::run; snames = nothing, prefix = nothing, i = nothing)::Vector{Int}
+function findSamples(pd::Run; snames = nothing, prefix = nothing, i = nothing)::Vector{Integer}
     if isnothing(i)
         allsnames = getSnames(pd)
         if isnothing(prefix)
