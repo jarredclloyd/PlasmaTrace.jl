@@ -1,25 +1,25 @@
-function setBlanks!(pd::sample; windows = nothing)
+function setBlanks!(pd::Sample; windows = nothing)
     return setWindows!(pd; blank = true, windows = windows)
 end
-function setBlanks!(pd::run; windows = nothing, i = nothing)
+function setBlanks!(pd::Run; windows = nothing, i = nothing)
     return setWindows!(pd; blank = true, windows = windows, i = i)
 end
 
-function setSignals!(pd::sample; windows = nothing)
+function setSignals!(pd::Sample; windows = nothing)
     return setWindows!(pd; blank = false, windows = windows)
 end
-function setSignals!(pd::run; windows = nothing, i = nothing)
+function setSignals!(pd::Run; windows = nothing, i = nothing)
     return setWindows!(pd; blank = false, windows = windows, i = i)
 end
 
-function setWindows!(pd::sample; blank = false, windows = nothing)
+function setWindows!(pd::Sample; blank = false, windows = nothing)
     if isnothing(windows)
         windows = autoWindow(pd; blank = blank)
     end
     fun = blank ? setBWin! : setSWin!
     return fun(pd, windows)
 end
-function setWindows!(pd::run; blank = false, windows = nothing, i = nothing)
+function setWindows!(pd::Run; blank = false, windows = nothing, i = nothing)
     if isnothing(i)
         i = 1:length(pd)
     end
@@ -30,7 +30,7 @@ function setWindows!(pd::run; blank = false, windows = nothing, i = nothing)
     return setSamples!(pd; samples = samples)
 end
 
-function autoWindow(pd::sample; blank = false)::Vector{window}
+function autoWindow(pd::Sample; blank = false)::Vector{window}
     dat = getDat(pd)[:, 3:end]
     total = vec(sum(dat; dims = 2))
     q = quantile(total, [0.05, 0.95])
@@ -52,21 +52,21 @@ function autoWindow(pd::sample; blank = false)::Vector{window}
     return [(from, to)]
 end
 
-function blankData(pd::sample; channels::Vector{String})
+function blankData(pd::Sample; channels::Vector{String})
     return windowData(pd; blank = true, channels = channels)
 end
-function blankData(pd::run; channels = nothing, i = nothing)
+function blankData(pd::Run; channels = nothing, i = nothing)
     return windowData(pd; blank = true, channels = channels, i = i)
 end
 
-function signalData(pd::sample; channels::Vector{String})
+function signalData(pd::Sample; channels::Vector{String})
     return windowData(pd; blank = false, channels = channels)
 end
-function signalData(pd::run; channels = nothing, i = nothing)
+function signalData(pd::Run; channels = nothing, i = nothing)
     return windowData(pd; blank = false, channels = channels, i = i)
 end
 
-function windowData(pd::sample; blank = false, channels = nothing)
+function windowData(pd::Sample; blank = false, channels = nothing)
     windows = blank ? getBWin(pd) : getSWin(pd)
     selection = Vector{Int}()
     if isnothing(windows)
@@ -81,7 +81,7 @@ function windowData(pd::sample; blank = false, channels = nothing)
 end
 
 function windowData(
-    pd::run;
+    pd::Run;
     blank::Bool = false,
     channels::Union{Nothing,Vector{String}} = nothing,
     i::Union{Nothing,Int,Vector{Int}} = nothing,
