@@ -20,7 +20,7 @@ function getAB(;method::String,refmat::String)
     return A, B
 end
 
-function setAB!(pd::run;method::String,
+function setAB!(pd::Run;method::String,
                 refmat::Union{String,Vector{String}})
     if isa(refmat,String) refmat = [refmat] end
     nref = size(refmat,1)
