@@ -1,9 +1,9 @@
-function setDRS!(pd::run; method = "LuHf", refmat = "Hogsbo")
+function setDRS!(pd::Run; method = "LuHf", refmat = "Hogsbo")
     setMethod!(pd; method = method)
     return setAB!(pd; method = method, refmat = refmat)
 end
 
-function setMethod!(pd::run; method::String)
+function setMethod!(pd::Run; method::String)
     if (method == "LuHf")
         channels = ["Lu175 -> 175", "Hf178 -> 260", "Hf176 -> 258"]
     else
