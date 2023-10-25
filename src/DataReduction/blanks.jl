@@ -1,4 +1,4 @@
-function fitBlanks!(pd::run; method::String, n = 2)
+function fitBlanks!(pd::Run; method::String, n = 2)
     setMethod!(pd; method = method)
     ctrl = getControl(pd)
     if isnothing(ctrl)
