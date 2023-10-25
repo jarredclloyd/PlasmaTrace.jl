@@ -1,5 +1,5 @@
 function plot(
-    pd::sample;
+    pd::Sample;
     channels::Union{Nothing,Vector{String}},
     transformation = "sqrt",
     show = true,
@@ -25,7 +25,7 @@ function plot(
 end
 
 function plot(
-    pd::run;
+    pd::Run;
     channels::Union{Nothing,Vector{String}} = nothing,
     transformation = "sqrt",
     steps = 1000,
@@ -33,15 +33,15 @@ function plot(
     show = true,
 )
     if isnothing(i)
-        dat = poolRunDat(pd)
+        data = poolRunDat(pd)
         labels = getLabels(pd)
         if isnothing(channels)
             selected = [1; 3:ncol(pd)]
         else
             selected = [1; label2index(pd, channels)]
         end
-        step = Int(ceil(size(dat, 1) / steps))
-        plotdat = dat[1:step:end, selected]
+        step = Int(ceil(size(data, 1) / steps))
+        plotdat = data[1:step:end, selected]
         p = plotHelper(
             plotdat;
             labels = labels[selected],
@@ -68,7 +68,7 @@ function plot(
 end
 
 function plotHelper(
-    dat::Matrix;
+    data::Matrix;
     labels::Vector{String},
     seriestype = :scatter,
     ms = 2,
@@ -76,8 +76,8 @@ function plotHelper(
     transformation = "sqrt",
     show = false,
 )
-    x = dat[:, 1]
-    y = dat[:, 2:end]
+    x = data[:, 1]
+    y = data[:, 2:end]
     ty = (transformation == "") ? y : eval(Symbol(transformation)).(y)
     p = Plots.plot(
         x,
@@ -100,7 +100,7 @@ end
 
 function plotWindows!(
     p;
-    pd::sample,
+    pd::Sample,
     blank = false,
     dy = Plots.ylims(p),
     linecolor = "black",
@@ -109,10 +109,10 @@ function plotWindows!(
     if isnothing(windows)
         return
     end
-    dat = getDat(pd)
+    data = getDat(pd)
     for w in windows
-        from = dat[w[1], 2]
-        to = dat[w[2], 2]
+        from = data[w[1], 2]
+        to = data[w[2], 2]
         Plots.plot!(
             p,
             [from, from, to, to, from],
@@ -126,7 +126,7 @@ end
 
 function plotFitted!(
     p;
-    pd::run,
+    pd::Run,
     i::Int,
     channels = nothing,
     dy = Plots.ylims(p),
