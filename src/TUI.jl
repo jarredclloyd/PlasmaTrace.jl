@@ -6,7 +6,7 @@ function PT(logbook="")
         "history" => DataFrame(task=String[],action=String[]),
         "chain" => ["top"],
         "i" => 1,
-        "denominator" => "",
+        "denominator" => nothing,
         "options" => Dict("blank" => 2, "drift" => 1, "downhole_fractionation" => 1),
         "mf" => nothing
     )
@@ -173,9 +173,9 @@ function tree(key::AbstractString,ctrl::AbstractDict)
                 "p" => TUIprevious!,
                 "g" => "goto",
                 "t" => TUItabulate,
-                "r" => "setDen",
-                "b" => "Bwin",
-                "s" => "Swin",
+                "r" => "set_denominator",
+                "b" => "blank_window",
+                "s" => "signal_window",
                 "x" => "x"
             )
         ),
@@ -183,11 +183,11 @@ function tree(key::AbstractString,ctrl::AbstractDict)
             message = "Enter the number of the sample to plot:",
             action = TUIgoto!
         ),
-        "setDen" => (
+        "set_denominator" => (
             message = TUIratioMessage,
             action = TUIratios!
         ),
-        "Bwin" => (
+        "blank_window" => (
             message =
             "Choose an option to set the blank window(s):\n"*
             "a: Automatic (current sample)\n"*
@@ -207,7 +207,7 @@ function tree(key::AbstractString,ctrl::AbstractDict)
                 "x" => "x"
             )
         ),
-        "Swin" => (
+        "signal_window" => (
             message =
             "Choose an option to set the signal window(s):\n"*
             "a: Automatic (current sample)\n"*
@@ -523,7 +523,7 @@ function TUIprocess!(ctrl::AbstractDict)
     stds = groups[groups.!="sample"]
     ctrl["anchors"] = getAnchor(ctrl["method"],stds)
     println("Fractionation correction...")
-    ctrl["par"] = fractionation(ctrl["run"],blank=ctrl["blank"],
+    ctrl["parameters"] = fractionation(ctrl["run"],blank=ctrl["blank"],
                                 channels=ctrl["channels"],
                                 anchors=ctrl["anchors"],mf=ctrl["mf"])
     ctrl["priority"]["process"] = false
@@ -561,7 +561,7 @@ function TUIplotter(ctrl::AbstractDict)
     end
     p = plot(sample,channels,denominator=ctrl["denominator"])
     if sample.group!="sample"
-        plotFitted!(p,sample,ctrl["par"],ctrl["blank"],
+        plotFitted!(p,sample,ctrl["parameters"],ctrl["blank"],
                     ctrl["channels"],ctrl["anchors"],denominator=ctrl["denominator"])
     end
     display(p)
@@ -600,7 +600,7 @@ function TUIratios!(ctrl::AbstractDict,response::AbstractString)
 end
 
 function TUIoneAutoBlankWindow!(ctrl::AbstractDict)
-    setBwin!(ctrl["run"][ctrl["i"]])
+    setblank_window!(ctrl["run"][ctrl["i"]])
     TUIplotter(ctrl)
 end
 
@@ -608,7 +608,7 @@ function TUIoneSingleBlankWindow!(ctrl::AbstractDict,response::AbstractString)
     response = TUIhelp("TUIoneSingleBlankWindow!",response)
     sample = ctrl["run"][ctrl["i"]]
     blank_window = string2windows(sample,text=response,single=true)
-    setBwin!(sample,blank_window)
+    setblank_window!(sample,blank_window)
     TUIplotter(ctrl)
     return "xx"
 end
@@ -617,13 +617,13 @@ function TUIoneMultiBlankWindow!(ctrl::AbstractDict,response::AbstractString)
     response = TUIhelp("TUIoneMultiBlankWindow!",response)
     sample = ctrl["run"][ctrl["i"]]
     blank_window = string2windows(sample,text=response,single=false)
-    setBwin!(sample,blank_window)
+    setblank_window!(sample,blank_window)
     TUIplotter(ctrl)
     return "xx"
 end
 
 function TUIallAutoBlankWindow!(ctrl::AbstractDict)
-    setBwin!(ctrl["run"])
+    setblank_window!(ctrl["run"])
     TUIplotter(ctrl)
 end
 
@@ -632,7 +632,7 @@ function TUIallSingleBlankWindow!(ctrl::AbstractDict,response::AbstractString)
     for i in eachindex(ctrl["run"])
         sample = ctrl["run"][i]
         blank_window = string2windows(sample,text=response,single=true)
-        setBwin!(sample,blank_window)
+        setblank_window!(sample,blank_window)
     end
     TUIplotter(ctrl)
     return "xx"
@@ -643,14 +643,14 @@ function TUIallMultiBlankWindow!(ctrl::AbstractDict,response::AbstractString)
     for i in eachindex(ctrl["run"])
         sample = ctrl["run"][i]
         blank_window = string2windows(sample,text=response,single=false)
-        setBwin!(sample,blank_window)
+        setblank_window!(sample,blank_window)
     end
     TUIplotter(ctrl)
     return "xx"
 end
 
 function TUIoneAutoSignalWindow!(ctrl::AbstractDict)
-    setSwin!(ctrl["run"][ctrl["i"]])
+    setsignal_window!(ctrl["run"][ctrl["i"]])
     TUIplotter(ctrl)
 end
 
@@ -658,7 +658,7 @@ function TUIoneSingleSignalWindow!(ctrl::AbstractDict,response::AbstractString)
     response = TUIhelp("TUIoneSingleSignalWindow!",response)
     sample = ctrl["run"][ctrl["i"]]
     signal_window = string2windows(sample,text=response,single=true)
-    setSwin!(sample,signal_window)
+    setsignal_window!(sample,signal_window)
     TUIplotter(ctrl)
     return "xx"
 end
@@ -667,13 +667,13 @@ function TUIoneMultiSignalWindow!(ctrl::AbstractDict,response::AbstractString)
     response = TUIhelp("TUIoneMultiSignalWindow!",response)
     sample = ctrl["run"][ctrl["i"]]
     signal_window = string2windows(sample,text=response,single=false)
-    setSwin!(sample,signal_window)
+    setsignal_window!(sample,signal_window)
     TUIplotter(ctrl)
     return "xx"
 end
 
 function TUIallAutoSignalWindow!(ctrl::AbstractDict)
-    setSwin!(ctrl["run"])
+    setsignal_window!(ctrl["run"])
     TUIplotter(ctrl)
 end
 
@@ -682,7 +682,7 @@ function TUIallSingleSignalWindow!(ctrl::AbstractDict,response::AbstractString)
     for i in eachindex(ctrl["run"])
         sample = ctrl["run"][i]
         signal_window = string2windows(sample,text=response,single=true)
-        setSwin!(sample,signal_window)
+        setsignal_window!(sample,signal_window)
     end
     TUIplotter(ctrl)
     return "xx"
@@ -693,7 +693,7 @@ function TUIallMultiSignalWindow!(ctrl::AbstractDict,response::AbstractString)
     for i in eachindex(ctrl["run"])
         sample = ctrl["run"][i]
         signal_window = string2windows(sample,text=response,single=false)
-        setSwin!(sample,signal_window)
+        setsignal_window!(sample,signal_window)
     end
     TUIplotter(ctrl)
     return "xx"
@@ -753,7 +753,7 @@ end
 
 function TUIexport2csv(ctrl::AbstractDict,response::AbstractString)
     ratios = averat(ctrl["run"],channels=ctrl["channels"],
-                    parameters=ctrl["par"],blank=ctrl["blank"])
+                    parameters=ctrl["parameters"],blank=ctrl["blank"])
     fname = splitext(response)[1]*".csv"
     CSV.write(fname,ratios[ctrl["selection"],:])
     return "xxx"
@@ -761,7 +761,7 @@ end
 
 function TUIexport2json(ctrl::AbstractDict,response::AbstractString)
     ratios = averat(ctrl["run"],channels=ctrl["channels"],
-                    parameters=ctrl["par"],blank=ctrl["blank"])
+                    parameters=ctrl["parameters"],blank=ctrl["blank"])
     fname = splitext(response)[1]*".json"
     export2IsoplotR(fname,ratios[ctrl["selection"],:],ctrl["method"])
     return "xxx"

@@ -97,6 +97,13 @@ function readmetest()
     return ratios
 end
 
+function PAtest()
+    all = load("data"; instrument = "Agilent")
+    channels = Dict("d" => "Hf178 -> 260", "D" => "Hf176 -> 258", "P" => "Lu175 -> 175")
+    analogue = PAselect(all; channels = channels, cutoff = 2e7)
+    return println(analogue)
+end
+
 function exporttest()
     ratios = readmetest()
     selection = subset(ratios,"BP") # "hogsbo"
